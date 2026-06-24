@@ -1,19 +1,46 @@
-import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 
 const DownloadCertificate = () => {
-  const { state } = useLocation();
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleDownload = async () => {
+  const fetchApplications = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8081/jamipariseva/api/request",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            citizen_id: "2823",
+            role_id: "6",
+            request_for: "pending",
+          }),
+        },
+      );
+
+      const result = await response.json();
+      setApplications(result.data || []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  const handleDownload = async (application) => {
     try {
       setLoading(true);
 
       const payload = {
-        service_id: state.service_id,
+        service_id: application.service_id,
         citizen_id: "2823",
         role_id: "6",
-        request_id: state.request_id,
+        request_id: application.request_id,
       };
 
       const response = await fetch(
@@ -24,7 +51,7 @@ const DownloadCertificate = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const result = await response.json();
@@ -42,52 +69,46 @@ const DownloadCertificate = () => {
     }
   };
 
-  if (!state) {
-    return (
-      <div className="p-5 text-red-500">
-        No application selected.
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto mt-10 bg-white shadow rounded-lg">
-
+    <div className="max-w-6xl mx-auto mt-10 bg-white shadow rounded-lg">
       <div className="bg-steal-blue text-white p-4 text-xl font-bold">
         Download Certified Copy
       </div>
 
       <div className="p-6">
+        {applications.length === 0 ? (
+          <p>No approved applications found.</p>
+        ) : (
+          <table className="w-full border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border p-2">Request ID</th>
+                <th className="border p-2">Service Name</th>
+                <th className="border p-2">Status</th>
+                <th className="border p-2">Action</th>
+              </tr>
+            </thead>
 
-        <div className="grid grid-cols-2 gap-4">
-
-          <div>
-            <p className="text-gray-500">Request ID</p>
-            <p className="font-semibold">{state.request_id}</p>
-          </div>
-
-          <div>
-            <p className="text-gray-500">Service</p>
-            <p className="font-semibold">{state.service_name}</p>
-          </div>
-
-          <div>
-            <p className="text-gray-500">Status</p>
-            <p className="font-semibold text-green-600">
-              {state.status}
-            </p>
-          </div>
-
-        </div>
-
-        <button
-          onClick={handleDownload}
-          disabled={loading}
-          className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
-        >
-          {loading ? "Downloading..." : "Download Certified Copy"}
-        </button>
-
+            <tbody>
+              {applications.map((app) => (
+                <tr key={app.request_id}>
+                  <td className="border p-2">{app.request_id}</td>
+                  <td className="border p-2">{app.service_name}</td>
+                  <td className="border p-2">{app.status}</td>
+                  <td className="border p-2">
+                    <button
+                      onClick={() => handleDownload(app)}
+                      disabled={loading}
+                      className="bg-blue-600 text-white px-4 py-2 rounded"
+                    >
+                      Download
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

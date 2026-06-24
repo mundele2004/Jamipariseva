@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const ApplicationStatus = (request_for) => {
   const [applicationList, setApplicationList] = useState([]);
-  const navigate = useNavigate();
 
   const handleclick = async (request_for, request_id = "") => {
     const apiData = {
@@ -114,9 +112,6 @@ const ApplicationStatus = (request_for) => {
           <div className="col-span-1 flex justify-center items-center p-2 font-bold text-center">
             E-challan
           </div>
-          <div className="col-span-2 flex justify-center items-center p-2 font-bold text-center">
-            Download
-          </div>
         </div>
 
         {applicationList.map((application, idx) => (
@@ -162,20 +157,6 @@ const ApplicationStatus = (request_for) => {
             </div>
             <div className="col-span-1 flex justify-center items-center p-2 text-center">
               {application.e_challan ? "Available" : "--"}
-            </div>
-            <div className="col-span-2 flex justify-center items-center p-2">
-              {application.status?.toLowerCase() === "success" && (
-                <button
-                  onClick={() =>
-                    navigate("/dashboard/download", {
-                      state: application,
-                    })
-                  }
-                  className="bg-blue-600 text-white px-3 py-1 rounded"
-                >
-                  Download
-                </button>
-              )}
             </div>
           </div>
         ))}
